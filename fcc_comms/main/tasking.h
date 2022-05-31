@@ -1,15 +1,40 @@
 #ifndef _TASKING_H_
 #define _TASKING_H_ 1
-struct tasklist_t {
-    TaskHandle_t tHandle;
-    TickType_t 	 tTicks;
-    uint32_t     u32OvCnt;
-    bool         bRunning;
+
+#define TASK_STACK_SIZE 1024
+
+// Later do this
+#define NUM_TASKS           3
+#define LEN(x)              (sizeof(x) / sizeof(&x[0]))
+#define MAX_GLOBAL_TICKS    100
+#define MAX_OVERRUN         10
+
+struct taskitem_t {
+    TaskHandle_t       tTaskHandle;
+    TickType_t         tTicks;
+    SemaphoreHandle_t  tSemHandle;
+    uint32_t           u32OverrunCount;
+    bool               bRunning;
 };
 
-void taskRunning(struct tasklist_t *ptTaskList);
-void taskNotRunning(struct tasklist_t *ptTaskList);
-void taskDetectOvRun(struct tasklist_t *ptTaskList);
+struct tasklist_t {
+    TickType_t        tGlobalTicks;
+    struct taskitem_t list[NUM_TASKS];
+};
+
+void taskInit(struct tasklist_t *ptTaskList);
+
+int32_t taskAdd (
+    struct tasklist_t *ptTaskList, 
+    char              *pcTaskName,
+    void             (*pfTask)(void *pvParam),
+    TickType_t         tTicks);
+
+void taskSchedulerStart (void);
+
+void taskRunning(struct taskitem_t *ptTaskItem);
+
+void taskNotRunning(struct taskitem_t *ptTaskItem);
 
 #endif /* _TASKING_H_ */
 
