@@ -1,6 +1,16 @@
 #ifndef _TASKING_H_
 #define _TASKING_H_ 1
 
+#include <stdio.h>
+#include <stdio.h>
+#include "sdkconfig.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "freertos/timers.h"
+#include "esp_system.h"
+#include "esp_spi_flash.h"
+
 #define TASK_STACK_SIZE 1024
 
 // Later do this
@@ -30,7 +40,7 @@ int32_t taskAdd (
     struct tasklist_t *ptTaskList, 
     char              *pcTaskName,
     void             (*pfTask)(void *pvParam),
-    TickType_t         tTicks);
+    uint32_t           u32Ms);
 
 void taskSchedulerStart (void);
 

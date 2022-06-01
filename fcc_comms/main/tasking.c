@@ -1,5 +1,12 @@
 #include "tasking.h"
-
+#include <stdio.h>
+#include "sdkconfig.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "freertos/semphr.h"
+#include "freertos/timers.h"
+#include "esp_system.h"
+#include "esp_spi_flash.h"
 
 static struct tasklist_t        taskList;
 static        SemaphoreHandle_t tSchedulerSemHandle;
@@ -9,6 +16,7 @@ static        uint32_t          u32SchedulerTimerID = 1;
 
 static void taskSchedule(struct tasklist_t *ptTaskList);
 static void taskSchedulerFunc(void *pvParam);
+static void timerCb(TimerHandle_t tSchedulerTimerHandle);
 
 void taskInit(struct tasklist_t * ptTaskList) {
     assert(ptTaskList);
@@ -16,7 +24,7 @@ void taskInit(struct tasklist_t * ptTaskList) {
     // Initialize the tasklist with zero tasks.
     for (uint32_t i = 0; i < LEN(ptTaskList->list); i++) {
         ptTaskList->list[i].tTaskHandle     = 0;
-        ptTaskList->list[i].tTicks          = 0;
+        ptTaskList->list[i].u32Ms           = 0;
         ptTaskList->list[i].tSemHandle      = 0;
         ptTaskList->list[i].u32OverrunCount = 0;
         ptTaskList->list[i].bRunning        = false;
@@ -30,7 +38,7 @@ void taskInit(struct tasklist_t * ptTaskList) {
     }
 
     // Initialize the scheduling-timer.
-    tSchedulerTimerHandle = xTimerCreate("tSchedulerTimerHandle", pdMS_TO_TICKS(SCHED_TIMER_MS), pdTRUE, (void *)&u32SchedulerTimerID, timer_cb);
+    tSchedulerTimerHandle = xTimerCreate("tSchedulerTimerHandle", pdMS_TO_TICKS(SCHED_TIMER_MS), pdTRUE, (void *)&u32SchedulerTimerID, timerCb);
     if (tSchedulerTimerHandle == NULL) {
         printf("[ERROR] taskInit : Unable to create tSchedulerTimerHandle\n");
     }
@@ -41,7 +49,7 @@ void taskInit(struct tasklist_t * ptTaskList) {
                             TASK_STACK_SIZE,                // Stack size in words, not bytes.
                             (void *)&tSchedulerSemHandle,   // Parameter passed into the task.
                             tskIDLE_PRIORITY,               // Priority at which the task is created.
-                            tSchedulerTaskHandle);
+                            &tSchedulerTaskHandle);
     (void)xRet;
 }
 
@@ -49,7 +57,7 @@ int32_t taskAdd (
     struct tasklist_t *ptTaskList, 
     char              *pcTaskName,
     void             (*pfTask)(void *pvParam),
-    uint32_t         tTicks) {
+    uint32_t           u32Ms) {
 
     assert(ptTaskList);
     assert(pcTaskName);
@@ -70,7 +78,7 @@ int32_t taskAdd (
             (void)xRet;
 
             ptTaskList->list[i].u32Ms              = u32Ms;
-            ptTaskList->list[i].tSemHandle         = xSemaphoreCreateBinary;
+            ptTaskList->list[i].tSemHandle         = xSemaphoreCreateBinary();
             ptTaskList->list[i].u32OverrunCount    = 0;
             ptTaskList->list[i].bRunning           = false;
             bAssigned                              = true;
@@ -100,7 +108,6 @@ void taskRunning(struct taskitem_t *ptTaskItem) {
 
 void taskNotRunning(struct taskitem_t *ptTaskItem) {
     assert(ptTaskItem);
-    SemaphoreHandle_t semHandle = (struct taskitem_t *)ptTaskItem.;
 
     ptTaskItem->bRunning = false;
 }
@@ -146,15 +153,15 @@ static void taskSchedule(struct tasklist_t *ptTaskList) {
 //     This timer fires every 5ms and calls taskScheduler.
 //
 ///////////////////////////////////////////////////////////////////////////////
-static void timer_cb(TimerHandle_t tSchedulerTimerHandle) {
+static void timerCb(TimerHandle_t tSchedulerTimerHandle) {
     // This doesn't make sense because timer is the handle
     // of the timer that called this callback.
     if (pvTimerGetTimerID(tSchedulerTimerHandle) == (void *)&u32SchedulerTimerID) {
-        printf("timer_cb : corrent timer-id\n");
+        printf("timerCb : corrent timer-id\n");
     }
 
-    if (sem != NULL) {
-        xSemaphoreGive(sem);
+    if (tSchedulerSemHandle != NULL) {
+        xSemaphoreGive(tSchedulerSemHandle);
     }
 }
 
@@ -167,7 +174,7 @@ static void timer_cb(TimerHandle_t tSchedulerTimerHandle) {
 static void taskSchedulerFunc(void *pvParam) {
     while (1) {
         // Blocking call
-        xSemaphoreTake(taskSemTimerCb, portMAX_DELAY);
+        xSemaphoreTake(tSchedulerSemHandle, portMAX_DELAY);
         taskSchedule(&taskList);
     }
 }
