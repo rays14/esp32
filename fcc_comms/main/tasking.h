@@ -16,14 +16,14 @@
 // Later do this
 #define NUM_TASKS           3
 #define LEN(x)              (sizeof(x) / sizeof(&x[0]))
-#define MAX_GLOBAL_TICKS    100
-#define MAX_OVERRUN         10
-#define SCHED_TIMER_MS      5
+#define MAX_GLOBAL_TICKS    100 /* LCM for task scheduling */
+#define MAX_OVERRUN         10  /* Max overruns for a task */
+#define SCHED_TIMER_MS      10  /* This needs to be 10 or bigger. */
 
 
 struct taskitem_t {
     TaskHandle_t       tTaskHandle;
-    uint32_t           u32Ms;
+    TickType_t         tTicks;
     SemaphoreHandle_t  tSemHandle;
     uint32_t           u32OverrunCount;
     bool               bRunning;
