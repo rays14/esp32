@@ -8,10 +8,12 @@
 #define LEN(x)              (sizeof(x) / sizeof(&x[0]))
 #define MAX_GLOBAL_TICKS    100
 #define MAX_OVERRUN         10
+#define SCHED_TIMER_MS      5
+
 
 struct taskitem_t {
     TaskHandle_t       tTaskHandle;
-    TickType_t         tTicks;
+    uint32_t           u32Ms;
     SemaphoreHandle_t  tSemHandle;
     uint32_t           u32OverrunCount;
     bool               bRunning;

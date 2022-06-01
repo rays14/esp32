@@ -125,7 +125,35 @@ void app_main() {
 }
 #else
 
+struct tasklist_t taskList[NUM_TASKS];
+
+// 10ms task.
+void task10ms(void *pvParam) {
+    // Extract the task information.
+    SemaphoreHandle_t tSem = ((struct taskitem_t *)pvParam)->tSemHandle;
+    while (1) {
+        if (tSem != NULL) {
+            printf("task10ms : sem available taking it\n");
+            // --------------------------
+            // If there sem was created 
+            // then use it else just use 
+            // plain old delay.
+            // --------------------------
+            xSemaphoreTake(tSem, portMAX_DELAY);
+            // Task schedule here
+        } else {
+            printf("task10ms : no sem so delay\n");
+            vTaskDelay(1000 /portTICK_PERIOD_MS);
+        }
+        printf("task10ms\n");
+    }
+}
+
 void app_main() {
+
+    taskInit(taskList);
+    taskAdd(taskList, "task10ms", task10ms, 10); 
+
 
     // Background task with command-line interface
     while (1) {

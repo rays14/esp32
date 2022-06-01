@@ -1,5 +1,6 @@
 #include "tasking.h"
 
+
 static struct tasklist_t        taskList;
 static        SemaphoreHandle_t tSchedulerSemHandle;
 static        TimerHandle_t     tSchedulerTimerHandle;
@@ -29,7 +30,7 @@ void taskInit(struct tasklist_t * ptTaskList) {
     }
 
     // Initialize the scheduling-timer.
-    tSchedulerTimerHandle = xTimerCreate("tSchedulerTimerHandle", pdMS_TO_TICKS(3000), pdTRUE, (void *)&u32SchedulerTimerID, timer_cb);
+    tSchedulerTimerHandle = xTimerCreate("tSchedulerTimerHandle", pdMS_TO_TICKS(SCHED_TIMER_MS), pdTRUE, (void *)&u32SchedulerTimerID, timer_cb);
     if (tSchedulerTimerHandle == NULL) {
         printf("[ERROR] taskInit : Unable to create tSchedulerTimerHandle\n");
     }
@@ -48,7 +49,7 @@ int32_t taskAdd (
     struct tasklist_t *ptTaskList, 
     char              *pcTaskName,
     void             (*pfTask)(void *pvParam),
-    TickType_t         tTicks) {
+    uint32_t         tTicks) {
 
     assert(ptTaskList);
     assert(pcTaskName);
@@ -68,7 +69,7 @@ int32_t taskAdd (
                                     &ptTaskList->list[i].tTaskHandle);
             (void)xRet;
 
-            ptTaskList->list[i].tTicks             = tTicks;
+            ptTaskList->list[i].u32Ms              = u32Ms;
             ptTaskList->list[i].tSemHandle         = xSemaphoreCreateBinary;
             ptTaskList->list[i].u32OverrunCount    = 0;
             ptTaskList->list[i].bRunning           = false;
@@ -99,6 +100,7 @@ void taskRunning(struct taskitem_t *ptTaskItem) {
 
 void taskNotRunning(struct taskitem_t *ptTaskItem) {
     assert(ptTaskItem);
+    SemaphoreHandle_t semHandle = (struct taskitem_t *)ptTaskItem.;
 
     ptTaskItem->bRunning = false;
 }
@@ -120,7 +122,7 @@ static void taskSchedule(struct tasklist_t *ptTaskList) {
 
     for (uint32_t i = 0; i < LEN(ptTaskList); i++) {
         if (ptTaskList->list[i].tTaskHandle) {
-            if ((ptTaskList->tGlobalTicks % ptTaskList->list[i].tTicks) == 0) {
+            if ((ptTaskList->tGlobalTicks % ptTaskList->list[i].u32Ms) == 0) {
                 // Check for overrun
                 if (ptTaskList->list[i].bRunning) {
                     if (ptTaskList->list[i].u32OverrunCount < MAX_OVERRUN) {
