@@ -13,6 +13,8 @@
 #include "freertos/semphr.h"
 #include "freertos/timers.h"
 #include "tasking.h"
+#include "cli.h"
+#include "esp_task_wdt.h"
 
 #if 0
 // Semaphores
@@ -148,7 +150,7 @@ void task10ms(void *pvParam) {
             printf("[ERROR] task10ms : no sem so delay\n");
             vTaskDelay(1000 /portTICK_PERIOD_MS);
         }
-        printf("[NOTE] task10ms : %d\n", count++);
+        //printf("[NOTE] task10ms : %d\n", count++);
     }
 }
 // 20ms task.
@@ -170,7 +172,7 @@ void task20ms(void *pvParam) {
             printf("[ERROR] task20ms : no sem so delay\n");
             vTaskDelay(1000 /portTICK_PERIOD_MS);
         }
-        printf("[NOTE] task20ms :\n");
+        //printf("[NOTE] task20ms :\n");
     }
 }
 // 40ms task.
@@ -192,12 +194,11 @@ void task40ms(void *pvParam) {
             printf("[ERROR] task40ms : no sem so delay\n");
             vTaskDelay(1000 /portTICK_PERIOD_MS);
         }
-        printf("[NOTE] task40ms :\n");
+        //printf("[NOTE] task40ms :\n");
     }
 }
 
 void app_main() {
-
     taskInit(&taskList);
     taskAdd(&taskList, "task10ms", task10ms, 10); 
     taskAdd(&taskList, "task20ms", task20ms, 20); 
@@ -206,10 +207,11 @@ void app_main() {
 
     // Background task with command-line interface
     while (1) {
-        printf("[NOTE] fcc_comms: background task\n");
+        //printf("[NOTE] fcc_comms: background task\n");
         count = 0;
+        cliTaskBlocking();
         // 1 second delay
-        vTaskDelay(1000 / portTICK_PERIOD_MS);
+        //vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
 
