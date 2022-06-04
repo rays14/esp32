@@ -11,26 +11,26 @@
 #include "esp_system.h"
 #include "esp_spi_flash.h"
 
-#define TASK_STACK_SIZE 1024
+#define TASK_STACK_SIZE 2048 
 
 // Later do this
 #define NUM_TASKS           3
 #define LEN(x)              (sizeof(x) / sizeof(&x[0]))
-#define MAX_GLOBAL_TICKS    100 /* LCM for task scheduling */
+#define MAX_GLOBAL_TICKS    120 /* LCM for task scheduling */
 #define MAX_OVERRUN         10  /* Max overruns for a task */
-#define SCHED_TIMER_MS      10  /* This needs to be 10 or bigger. */
+#define SCHED_TIMER_MS       5  /* This needs to be 10 or bigger. */
 
 
 struct taskitem_t {
     TaskHandle_t       tTaskHandle;
-    TickType_t         tTicks;
+    uint32_t           tTicks;
     SemaphoreHandle_t  tSemHandle;
     uint32_t           u32OverrunCount;
     bool               bRunning;
 };
 
 struct tasklist_t {
-    TickType_t        tGlobalTicks;
+    uint32_t          tGlobalTicks;
     struct taskitem_t list[NUM_TASKS];
 };
 

@@ -126,15 +126,17 @@ void app_main() {
 #else
 
 struct tasklist_t taskList;
+uint32_t count = 0;
 
 // 10ms task.
 void task10ms(void *pvParam) {
     // Extract the task information.
     SemaphoreHandle_t tSem = ((struct taskitem_t *)pvParam)->tSemHandle;
+
     printf("[NOTE] task10ms : started\n");
     while (1) {
         if (tSem != NULL) {
-            printf("[NOTE] task10ms : sem available taking it\n");
+            //printf("[NOTE] task10ms : sem available taking it\n");
             // --------------------------
             // If there sem was created 
             // then use it else just use 
@@ -143,10 +145,10 @@ void task10ms(void *pvParam) {
             xSemaphoreTake(tSem, portMAX_DELAY);
             // Task schedule here
         } else {
-            printf("task10ms : no sem so delay\n");
+            printf("[ERROR] task10ms : no sem so delay\n");
             vTaskDelay(1000 /portTICK_PERIOD_MS);
         }
-        printf("[NOTE] task10ms :\n");
+        printf("[NOTE] task10ms : %d\n", count++);
     }
 }
 // 20ms task.
@@ -156,7 +158,7 @@ void task20ms(void *pvParam) {
     printf("[NOTE] task20ms : started\n");
     while (1) {
         if (tSem != NULL) {
-            printf("[NOTE] task20ms : sem available taking it\n");
+            //printf("[NOTE] task20ms : sem available taking it\n");
             // --------------------------
             // If there sem was created 
             // then use it else just use 
@@ -165,7 +167,7 @@ void task20ms(void *pvParam) {
             xSemaphoreTake(tSem, portMAX_DELAY);
             // Task schedule here
         } else {
-            printf("task20ms : no sem so delay\n");
+            printf("[ERROR] task20ms : no sem so delay\n");
             vTaskDelay(1000 /portTICK_PERIOD_MS);
         }
         printf("[NOTE] task20ms :\n");
@@ -178,7 +180,7 @@ void task40ms(void *pvParam) {
     printf("[NOTE] task40ms : started\n");
     while (1) {
         if (tSem != NULL) {
-            printf("[NOTE] task40ms : sem available taking it\n");
+            //printf("[NOTE] task40ms : sem available taking it\n");
             // --------------------------
             // If there sem was created 
             // then use it else just use 
@@ -205,7 +207,7 @@ void app_main() {
     // Background task with command-line interface
     while (1) {
         printf("[NOTE] fcc_comms: background task\n");
-
+        count = 0;
         // 1 second delay
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }

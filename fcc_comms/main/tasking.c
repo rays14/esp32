@@ -78,7 +78,7 @@ int32_t taskAdd (
                                     &(ptTaskList->list[i].tTaskHandle));
             (void)xRet;
 
-            ptTaskList->list[i].tTicks             = pdMS_TO_TICKS(u32Ms);
+            ptTaskList->list[i].tTicks             = (u32Ms / SCHED_TIMER_MS);
             ptTaskList->list[i].tSemHandle         = xSemaphoreCreateBinary();
             ptTaskList->list[i].u32OverrunCount    = 0;
             ptTaskList->list[i].bRunning           = false;
@@ -130,7 +130,7 @@ static void taskSchedule(struct tasklist_t *ptTaskList) {
 
     for (uint32_t i = 0; i < NUM_TASKS; i++) {
         if (ptTaskList->list[i].tTaskHandle) {
-            printf("[NOTE] taskSchedule : task scheduled\n");
+            //printf("[NOTE] taskSchedule : task scheduled\n");
             if ((ptTaskList->tGlobalTicks % ptTaskList->list[i].tTicks) == 0) {
                 // Check for overrun
                 if (ptTaskList->list[i].bRunning) {
@@ -159,7 +159,7 @@ static void timerCb(TimerHandle_t tSchedulerTimerHandle) {
     // This doesn't make sense because timer is the handle
     // of the timer that called this callback.
     if (pvTimerGetTimerID(tSchedulerTimerHandle) == (void *)&u32SchedulerTimerID) {
-        printf("[NOTE] timerCb : correct timer-id\n");
+        //printf("[NOTE] timerCb : correct timer-id\n");
     }
 
     if (tSchedulerSemHandle) {
@@ -176,7 +176,7 @@ static void timerCb(TimerHandle_t tSchedulerTimerHandle) {
 static void taskSchedulerFunc(void *pvParam) {
     struct tasklist_t *taskList = (struct tasklist_t *)pvParam;
     while (1) {
-        printf("[NOTE] taskSchedulerFunc : Running\n");
+        //printf("[NOTE] taskSchedulerFunc : Running\n");
         // Blocking call
         xSemaphoreTake(tSchedulerSemHandle, portMAX_DELAY);
         taskSchedule(taskList);
