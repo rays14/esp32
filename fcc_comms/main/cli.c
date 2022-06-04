@@ -76,6 +76,9 @@ static void menuCmdCb(int argc, char *argv[]) {
 static void helpCmdCb(int argc, char *argv[]) {
     //printf("\r\nhelp_cmd_cb\r\n");
     //printArgs(argc, argv);
+    printf(" ----------------------------------\n");
+    printf("Boo .. I am of no help!!\n");
+    printf(" ----------------------------------\n");
 }
 // ----------------------------------------------------------------------------
 
@@ -108,7 +111,7 @@ static void cliParseCmd(char *cmd) {
     // Tokenize.
     while ((tok = strtok(tokStr, " ")) != NULL) {
         argv[argc] = tok;
-        printf("cliParseCmd : %s\n", tok);
+        //printf("cliParseCmd : %s\n", tok);
         argc++;
         tokStr = NULL;
     }
@@ -116,13 +119,13 @@ static void cliParseCmd(char *cmd) {
     // Based on argv[0] call the command and pass in arguments.
     for (uint32_t i = 0; (cmdTable[i].cmd != NULL); i++) {
         if (argv[0]) {
-            printf("i = %d, cmd = %s, argv = %s\n", i, cmdTable[i].cmd, argv[0]);
+            //printf("i = %d, cmd = %s, argv = %s\n", i, cmdTable[i].cmd, argv[0]);
             if (strcmp(cmdTable[i].cmd, argv[0]) == 0) {
                 cmdTable[i].cb(argc, argv);
                 goto cliParseCmdExit;
             }
         } else {
-            printf("i = %d, cmd = %s\n", i, cmdTable[i].cmd);
+            //printf("i = %d, cmd = %s\n", i, cmdTable[i].cmd);
         }
     }
 cliParseCmdExit:
@@ -132,7 +135,7 @@ cliParseCmdExit:
 char inbyte() {
     char c;
     while ((c = getc(stdin)) == 255);
-    printf("%d 0x%02x\n", c, c);
+    //printf("%d 0x%02x\n", c, c);
     return c;
 }
 
@@ -168,7 +171,7 @@ void cliTaskBlocking(void) {
         if (index > 0)
             index--;
     } else if (c == 27) {
-        c = inbyte(); // Get the [ character.
+        //c = inbyte(); // Get the [ character.
         c = inbyte(); // Get the [ character.
         c = inbyte(); // Get up, down, left, right.
         if (c == 'A') { // up
